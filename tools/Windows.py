@@ -1,6 +1,6 @@
 """
 title: Windows
-description: Windows系统相关工具集合
+description: Windows system tool collection
 version: 0.1.0
 author: Hui LIU
 license: MIT
@@ -18,13 +18,13 @@ class Tools:
     def __init__(self):
         pass
 
-    # 包括保存桌面图片、保存屏保图片等功能
+    # Includes functions to save desktop images, save screensaver images, etc.
 
     def archive_desktop_images(
         self,
     ) -> str:
         """
-        保存桌面图片
+        Save desktop images
         """
 
         user = os.getenv("USERPROFILE")
@@ -52,7 +52,7 @@ class Tools:
         self,
     ) -> str:
         """
-        保存屏保图片
+        Save login-screen images
         """
 
         user = os.getenv("USERPROFILE")
@@ -80,7 +80,7 @@ class Tools:
         file_filter=None,
     ):
         """
-        保存图片通用逻辑
+        Common logic for saving images
         """
         try:
             source = Path(source_path)
@@ -96,7 +96,7 @@ class Tools:
                 dest = target / file_rename(file)
                 shutil.copy2(file, dest)
 
-            return f"保存已经完成，保存的路径是{target_path}"
+            return f"Saving completed, saved at {target_path}"
         except Exception as e:
             print(e)
 

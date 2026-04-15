@@ -1,6 +1,6 @@
 """
 title: FFmpeg
-description: 音视频文件转换工具集合
+description: Audio and video file conversion tool collection
 version: 0.1.0
 author: Hui LIU
 license: MIT
@@ -17,19 +17,21 @@ class Tools:
     def __init__(self):
         pass
 
-    # 通过FFmpeg帮忙转为音视频文件的格式
+    # Convert audio and video file formats using FFmpeg
 
     def convert_audio(
         self,
         input_file_path: str = Field(
-            ..., description="（被转换的）输入文件路径，例如：C:\\input.mp4。"
+            ...,
+            description=(r"Input file path to be converted. e.g., C:\input.mp4."),
         ),
     ) -> str:
         """
-        将输入转为音频mp3
+        Convert input file to audio mp3
         """
 
-        output_file_path = f"{input_file_path}.mp3"  # （转换后的）输出文件路径。
+        # Output file path after conversion.
+        output_file_path = f"{input_file_path}.mp3"
         if os.path.exists(output_file_path):
             return f"'{output_file_path}' already exists."
 
@@ -38,26 +40,46 @@ class Tools:
                 "-n"
             ).run()
 
-            return f"转换已经完成，保存的路径是{output_file_path}"
+            return f"Conversion completed, saved at {output_file_path}"
         except Exception as e:
             print(e)
 
             return str(e)
 
-    def replace_audio(
+    def convert_audios(
         self,
-        input_video_path: str = Field(
-            ..., description="（被替换的）视频文件路径，例如：C:\\input.mp4。"
-        ),
-        input_audio_path: str = Field(
-            ..., description="（要转换的）音频文件路径，例如：C:\\input.mp3。"
+        input_file_paths: list[str] = Field(
+            ...,
+            description=(
+                r"Input file paths to be converted, "
+                r"A list of file paths. "
+                r'(e.g., ["C:\input1.mp4", "C:\input2.mp4"]).'
+            ),
         ),
     ) -> str:
         """
-        使用音频替换视频的音轨
+        Convert multiple input files to audio mp3
         """
 
-        output_file_path = f"{input_video_path}.mp4"  # （替换后的）输出文件路径。
+        results = [self.convert_audio(path) for path in input_file_paths]
+        return "\n".join(results)
+
+    def replace_audio(
+        self,
+        input_video_path: str = Field(
+            ...,
+            description=(r"Video file path to be replaced, e.g., C:\input.mp4."),
+        ),
+        input_audio_path: str = Field(
+            ..., description=(r"Audio file path to be used, e.g., C:\input.mp3.")
+        ),
+    ) -> str:
+        """
+        Replace video's audio track with the provided audio
+        """
+
+        # Output file path after replacement.
+        output_file_path = f"{input_video_path}.mp4"
         if os.path.exists(output_file_path):
             return f"'{output_file_path}' already exists."
 
@@ -66,15 +88,21 @@ class Tools:
             a = ffmpeg.input(input_audio_path)
 
             ffmpeg.output(
-                v.video,  # 视频流取自第 1 个输入（0:v）
-                a.audio,  # 音频流取自第 2 个输入（1:a）
+                # Video stream from the first input (0:v)
+                v.video,
+                # Audio stream from the second input (1:a)
+                a.audio,
                 output_file_path,
-                vcodec="copy",  # 视频不重编码
-                acodec="aac",  # 在 MP4 容器里 AAC 兼容性最稳
-                shortest=None,  # 让输出以较短者结束，避免音频长于视频时产生尾部黑屏/静音拖尾
+                # Do not re-encode video
+                vcodec="copy",
+                # AAC has the best compatibility in MP4 container
+                # Let output end with the shorter one to avoid black
+                # screen/silence when audio is longer than video
+                acodec="aac",
+                shortest=None,
             ).global_args("-n").run()
 
-            return f"替换已经完成，保存的路径是{output_file_path}"
+            return f"Replacement completed, saved at {output_file_path}"
         except Exception as e:
             print(e)
 
